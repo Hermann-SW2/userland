@@ -1,5 +1,5 @@
 OBJS=encode.o
-BIN=hello_encode.bin
+BIN=i420toh264.bin
 LDFLAGS+=-lilclient
 
 include ../Makefile.include

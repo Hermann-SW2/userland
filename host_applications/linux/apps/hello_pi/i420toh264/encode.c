@@ -36,37 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "bcm_host.h"
 #include "ilclient.h"
 
-#define NUMFRAMES 300
-#define WIDTH     640
-#define HEIGHT    ((WIDTH)*9/16)
-
-// generate an animated test card in YUV format
-static int
-generate_test_card(void *buf, OMX_U32 * filledLen, int frame, OMX_PARAM_PORTDEFINITIONTYPE *def)
-{
-   int i, j;
-   OMX_VIDEO_PORTDEFINITIONTYPE *vid = &def->format.video;
-   char *y = buf;
-   char *u = y + vid->nStride * vid->nSliceHeight;
-   char *v = u + (vid->nStride >> 1) * (vid->nSliceHeight >> 1);
-
-   for (j = 0; j < vid->nFrameHeight / 2; j++) {
-      char *py = y + 2 * j * vid->nStride;
-      char *pu = u + j * (vid->nStride >> 1);
-      char *pv = v + j * (vid->nStride >> 1);
-      for (i = 0; i < vid->nFrameWidth / 2; i++) {
-         int z = (((i + frame) >> 4) ^ ((j + frame) >> 4)) & 15;
-         py[0] = py[1] = py[vid->nStride] = py[vid->nStride + 1] = 0x80 + z * 0x8;
-         pu[0] = 0x00 + z * 0x10;
-         pv[0] = 0x80 + z * 0x30;
-         py += 2;
-         pu++;
-         pv++;
-      }
-   }
-   *filledLen = (vid->nStride * vid->nSliceHeight * 3) >> 1;
-   return 1;
-}
+int width=0, height=0;
 
 static void
 print_def(OMX_PARAM_PORTDEFINITIONTYPE def)
@@ -144,11 +114,11 @@ video_encode_test(char *outputfilename)
    print_def(def);
 
    // Port 200: in 1/1 115200 16 enabled,not pop.,not cont. 320x240 320x240 @1966080 20
-   def.format.video.nFrameWidth = WIDTH;
-   def.format.video.nFrameHeight = HEIGHT;
+   def.format.video.nFrameWidth = width;
+   def.format.video.nFrameHeight = height;
    def.format.video.xFramerate = 30 << 16;
    def.format.video.nSliceHeight = ALIGN_UP(def.format.video.nFrameHeight, 16);
-   def.format.video.nStride = def.format.video.nFrameWidth;
+   def.format.video.nStride = ALIGN_UP(def.format.video.nFrameWidth, 32);
    def.format.video.eColorFormat = OMX_COLOR_FormatYUV420PackedPlanar;
 
    print_def(def);
@@ -248,7 +218,9 @@ video_encode_test(char *outputfilename)
          printf("Doh, no buffers for me!\n");
       } else {
          /* fill it */
-         generate_test_card(buf->pBuffer, &buf->nFilledLen, framenumber++, &def);
+         buf->nFilledLen = def.format.video.nStride*def.format.video.nSliceHeight*3/2;
+         framenumber++;
+         fread(buf->pBuffer, buf->nFilledLen, 1, stdin);
 
          if (OMX_EmptyThisBuffer(ILC_GET_HANDLE(video_encode), buf) !=
              OMX_ErrorNone) {
@@ -269,7 +241,7 @@ video_encode_test(char *outputfilename)
             if (r != out->nFilledLen) {
                printf("fwrite: Error emptying buffer: %d!\n", r);
             } else {
-               printf("Writing frame %d/%d, len %u\n", framenumber, NUMFRAMES, out->nFilledLen);
+               printf("Writing frame %d, len %u\n", framenumber, out->nFilledLen);
             }
             out->nFilledLen = 0;
          } else {
@@ -282,7 +254,7 @@ video_encode_test(char *outputfilename)
          }
       }
    }
-   while (framenumber < NUMFRAMES);
+   while ( !feof(stdin) );
 
    fclose(outf);
 
@@ -306,10 +278,12 @@ video_encode_test(char *outputfilename)
 int
 main(int argc, char **argv)
 {
-   if (argc < 2) {
-      printf("Usage: %s <filename>\n", argv[0]);
+   if (argc < 4) {
+      printf("Usage: %s <filename> <width> <height>\n", argv[0]);
       exit(1);
    }
+   width  = atoi(argv[2]);
+   height = atoi(argv[3]);
    bcm_host_init();
    return video_encode_test(argv[1]);
 }
