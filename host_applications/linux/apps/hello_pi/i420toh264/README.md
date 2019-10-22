@@ -55,8 +55,8 @@ Similar "plugin" can be used to detect airplane in the sky and control pan tilt 
 
 ### Simple modifying pipeline
 
-[sample_yuv2grey.c](sample_yuv2grey.c) receives YUV video frames from raspividyuv, and sends modified to [i420toh264.c](i420toh264.c), which creates tst.h264. It keeps Y value, but sets U and V values to 128 for all pixels, which is "to grey conversion" of input frame.  
-Of course as modifying "plugin" can control eg. servos as well.
+[sample_yuv2grey.c](sample_yuv2grey.c) receives YUV video frames from raspividyuv, and sends them modified to [i420toh264.c](i420toh264.c), which creates tst.h264. It keeps Y value, but sets U and V values to 128 for all pixels, which is "to grey conversion" of input frame.  
+Of course a modifying "plugin" can control eg. servos as well.
 
     $ time ( \
     > raspividyuv -md 5 -w 1640 -h 922 -o - -t 15000 -fps 25 | \
