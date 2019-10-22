@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     fwrite(buf, nLenY, 1, stdout); fflush(stdout);
 
-    for(y=0; y<width; y++)
+    for(y=0; y<height; y++)
     {
       unsigned char *p = (unsigned char*)(buf + y * nStride);
       for(int x=0; x<width; ++x)
