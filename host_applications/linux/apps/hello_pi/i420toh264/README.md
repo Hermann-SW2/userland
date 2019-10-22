@@ -35,7 +35,7 @@ Record with raspividyuv on v2 camera, create tst.h264:
 
 ### Simple non-modifying pipeline
 
-[sample_yuv_brightness.c](sample_yuv_brightness.c) receives yuv video frames from raspividyuv, and sends them unmodified to [i420toh264.c](i420toh264.c), which creates tst.h264. It analalyzes the brightness of each frame by inspecting all frame pixels and outputs either "dark" or "bright". For example run below scene was dark, and light was turned on and off.  
+[sample_yuv_brightness.c](sample_yuv_brightness.c) receives yuv video frames from raspividyuv, and sends them unmodified to i420toh264 ([encode.c](encode.c)), which creates tst.h264. It analalyzes the brightness of each frame by inspecting all frame pixels and outputs either "dark" or "bright". For example run below scene was dark, and light was turned on and off.  
 Similar "plugin" can be used to detect airplane in the sky and control pan tilt camera system servos for always centered recording of the airplane.
 
     $ raspividyuv -md 5 -w 1640 -h 922 -o - -t 8000 -awb greyworld -fps 2 | \
@@ -55,7 +55,7 @@ Similar "plugin" can be used to detect airplane in the sky and control pan tilt 
 
 ### Simple modifying pipeline
 
-[sample_yuv2grey.c](sample_yuv2grey.c) receives YUV video frames from raspividyuv, and sends them modified to [i420toh264.c](i420toh264.c), which creates tst.h264. It keeps Y value, but sets U and V values to 128 for all pixels, which is "to grey conversion" of input frame.  
+[sample_yuv2grey.c](sample_yuv2grey.c) receives YUV video frames from raspividyuv, and sends them modified to i420toh264 ([encode.c](encode.c)), which creates tst.h264. It keeps Y value, but sets U and V values to 128 for all pixels, which is "to grey conversion" of input frame.  
 Of course a modifying "plugin" can control eg. servos as well.
 
     $ time ( \
