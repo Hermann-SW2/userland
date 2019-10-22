@@ -39,7 +39,7 @@ Record with raspividyuv on v2 camera, create tst.h264:
 Similar "plugin" can be used to detect airplane in the sky and control pan tilt camera system servos for always centered recording of the airplane.
 
     $ raspividyuv -md 5 -w 1640 -h 922 -o - -t 8000 -awb greyworld -fps 2 | \
-    > ./sample_yuv_brightnes 1640 922 | \
+    > ./sample_yuv_brightness 1640 922 | \
     > ./i420toh264 tst.h264 1640 922 > /dev/null
     bright
     bright
