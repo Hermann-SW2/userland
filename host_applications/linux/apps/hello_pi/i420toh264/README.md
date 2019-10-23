@@ -77,3 +77,27 @@ Of course a modifying "plugin" can control eg. servos as well.
     sys	0m13.464s
     $ 
 
+### Advanced modifying pipeline
+
+[sample_yuv_alpha.c](sample_yuv_alpha.c) receives YUV video frames from raspividyuv, and sends them modified to i420toh264 tool ([encode.c](encode.c)), which creates tst.h264. It keeps U and V values for all pixels, which is "keep color" of input frame. The Y values are modified according the same format (1640×922) alpha transparency .pgm file. This is first sample program that has to be compiled optimized (-O6) in order to work for 1640x922@25fps.
+
+    $ time (
+    > raspividyuv -md 5 -w 1640 -h 922 -o - -fps 25 | \
+    > ./sample_yuv_alpha 1640 922 1640x922.circle900.pgm | \
+    > ./i420toh264 tst.h264 1640 922 > /dev/null \
+    > )
+    
+    real	0m5.359s
+    user	0m2.792s
+    sys	0m2.639s
+    $ 
+
+This is transparency example generated with [1640x922.circle900.c](1640x922.circle900.c) used in above command:  
+(below images are scaled down to 25%, right click for full size)  
+<img width="410" src="1640x922.circle900.pgm.png"/>  
+
+This is a frame from generated tst.h264 video:  
+<img width="410" src="frame_circle.png"/>  
+
+This is frame from scene without modifications, created with [Minimal in use pipeline](#minimal-use-in-pipeline):  
+<img width="410" src="frame_full.png"/>
