@@ -2,9 +2,17 @@
 
 Tool i420toh264 was built from [hello_pi/hello_encode](../hello_encode) with only few changes, see [diff for commit d4a5f005d91116fe1fa747c07ab1aeb75d5c732b](https://github.com/Hermann-SW2/userland/commit/d4a5f005d91116fe1fa747c07ab1aeb75d5c732b).  
 
-It allows to convert YUV video (eg. created by raspividyuv) to .h264 encoded video.  
+It allows to convert [raspividyuv](https://www.raspberrypi.org/documentation/raspbian/applications/camera.md) video to .h264 encoded video.  
 Reason for not using raspivid to create .h264 encoded video directly is, that in pipeline a "plugin" can process each and every YUV frame of the video stream easily, and either analyze+control and/or modify the frames, before final conversion to .h264.
- 
+
+All you need to know about [raspividyuv](https://www.raspberrypi.org/documentation/raspbian/applications/camera.md) frame [I420](https://fourcc.org/pixel-format/yuv-i420/) memory layout for processing:  
+* each Y or U or V pixel value is stored as 1 byte  
+* Y pixel values are followed by U and then V pixel values
+* rows are stored from top to bottom  
+* pixels in a row are stored from left to right  
+* align_up(a,b) is minimal multiple of b which is ≥a  
+![YUV frame layout](YUV_frame.png)
+
 ## Building on Pi
 
 To build i420toh264 on the pi, first build the libs:
