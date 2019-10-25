@@ -101,3 +101,6 @@ This is a frame from generated tst.h264 video:
 
 This is frame from scene without modifications, created with [Minimal in use pipeline](#minimal-use-in-pipeline):  
 <img width="410" src="frame_full.png"/>
+
+For easy visual verification of transparency "plugin" working:  
+<img width="410" src="frame_alpha.anim.gif"/>
