@@ -3,11 +3,9 @@
 #include <string.h>
 #include <assert.h>
 
-#define max ((3280+16)*2464*3/2)
-
 int align_up(int x, int y)
 {
-  return ((x-1)|(y-1))+1;
+  return ((x-1)|((1<<y)-1))+1;
 }
 
 int main(int argc, char *argv[])
@@ -16,10 +14,10 @@ int main(int argc, char *argv[])
   unsigned char *buf, *alpha, *p, *q;
   char line[1000];
   FILE *src;
-  assert(argc==4 || !"Format: YUV2Yuv width height alpha.pgm");
+  assert(argc==4 || !"Format: sample_yuv_alpha width height alpha.pgm");
 
-  width  = atoi(argv[1]); nStride      = align_up(width,  32);
-  height = atoi(argv[2]); nSliceHeight = align_up(height, 16);
+  width  = atoi(argv[1]); nStride      = align_up(width,  5);
+  height = atoi(argv[2]); nSliceHeight = align_up(height, 4);
 
   nLenY = nStride * nSliceHeight;  nLenU = nLenV = nLenY / 4;
   assert( (buf = malloc(nLenY)) );
