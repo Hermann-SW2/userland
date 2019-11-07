@@ -103,6 +103,9 @@ Of course a modifying "plugin" can control eg. servos as well.
     sys	0m2.639s
     $ 
 
+This is the flow:  
+![advanced.diagram.png](advanced.diagram.png)
+
 This is transparency example generated with [1640x922.circle900.c](1640x922.circle900.c) used in above command:  
 (below images are scaled down to 25%, right click for full size)  
 <img width="410" src="1640x922.circle900.pgm.png"/>  
