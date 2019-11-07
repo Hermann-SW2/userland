@@ -7,6 +7,8 @@
   * [Simple non-modifying pipeline](#simple-non-modifying-pipeline)
   * [Simple modifying pipeline](#simple-modifying-pipeline)
   * [Advanced modifying pipeline](#advanced-modifying-pipeline)  
+    * [Locating airplane](#locating-airplane)
+    * [Alpha blending](#alpha-blending)  
 <img width="205" src="frame_full.png"/> + <img width="205" src="1640x922.circle900.pgm.png"/> = <img width="205" src="frame_circle.png"/>  
 
 ## Introduction
@@ -90,6 +92,21 @@ Of course a modifying "plugin" can control eg. servos as well.
 
 ### Advanced modifying pipeline
 
+#### Locating airplane
+
+[sample_yuv_airplane.c](sample_yuv_airplane.c) receives YUV video frames from raspividyuv [or from elsewhere], and sends them modified to i420toh264 tool ([encode.c](encode.c)), which creates out.h264. It uses simple heuristic to locate an airplane in frame (determine its darkest pixel), and then marks that position with a 2x2 white marker. Later the determined position will be used to control the servos of a PT camera system for recording video always centered on airplane, without adding marker. Here you can see the command used to develop sample_yuv_airplane plugin offline, without raspividyuv and without i4202h264 (because that runs on Raspberry Pi only) on Ubuntu laptop:
+
+```
+$ ./sample_yuv_airplane 640 480 320 20 < <(bzip2 -dc day.yuv.bz2) >out.yuv 2>err
+$ ffmpeg -video_size 640x480 -pixel_format yuv420p -i out.yuv out.h264 -y 2>err
+$
+```
+
+Here you can see part of the generated video, overlayed with flow of operation:  
+<img src="airplane.200.anim.gif"/>
+
+#### Alpha blending
+
 [sample_yuv_alpha.c](sample_yuv_alpha.c) receives YUV video frames from raspividyuv, and sends them modified to i420toh264 tool ([encode.c](encode.c)), which creates tst.h264. It keeps U and V values for all pixels, which is "keep color" of input frame. The Y values are modified according the same format (1640×922) alpha transparency .pgm file. This is first sample program that has to be compiled optimized (-O6) in order to work for 1640x922@25fps.
 
     $ time (
@@ -118,3 +135,4 @@ This is frame from scene without modifications, created with [Minimal in use pip
 
 For easy visual verification of transparency "plugin" working:  
 <img width="410" src="frame_alpha.anim.gif"/>
+
