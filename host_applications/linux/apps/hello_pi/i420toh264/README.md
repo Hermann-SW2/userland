@@ -136,3 +136,9 @@ This is frame from scene without modifications, created with [Minimal in use pip
 For easy visual verification of transparency "plugin" working:  
 <img width="410" src="frame_alpha.anim.gif"/>
 
+<a name="reticle"></a>Here is another transparency example generated with [1640x922.fine_crosshair_900.c](1640x922.fine_crosshair_900.c):  
+<img width="410" src="1640x922.fine_crosshair_900.pgm.png"/>  
+
+This is a frame from generated tst.h264 video:  
+<img width="410" src="frame_full.fine_crosshair.png"/>  
+
