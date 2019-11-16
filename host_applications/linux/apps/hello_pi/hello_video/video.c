@@ -49,11 +49,17 @@ static int video_decode_test(char *filename)
    memset(list, 0, sizeof(list));
    memset(tunnel, 0, sizeof(tunnel));
 
+   if (strcmp(filename, "-")==0)
+   {
+      in = stdin;
+   } else {
    if((in = fopen(filename, "rb")) == NULL)
       return -2;
+   }
 
    if((client = ilclient_init()) == NULL)
    {
+      if (strcmp(filename, "=")!=0)
       fclose(in);
       return -3;
    }
@@ -61,6 +67,7 @@ static int video_decode_test(char *filename)
    if(OMX_Init() != OMX_ErrorNone)
    {
       ilclient_destroy(client);
+      if (strcmp(filename, "=")!=0)
       fclose(in);
       return -4;
    }
@@ -190,6 +197,7 @@ static int video_decode_test(char *filename)
 
    }
 
+   if (strcmp(filename, "=")!=0)
    fclose(in);
 
    ilclient_disable_tunnel(tunnel);
