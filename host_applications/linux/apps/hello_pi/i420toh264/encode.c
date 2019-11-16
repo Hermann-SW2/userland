@@ -38,10 +38,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int width=0, height=0;
 
+#define Printf(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__)
+
 static void
 print_def(OMX_PARAM_PORTDEFINITIONTYPE def)
 {
-   printf("Port %u: %s %u/%u %u %u %s,%s,%s %ux%u %ux%u @%u %u\n",
+   Printf("Port %u: %s %u/%u %u %u %s,%s,%s %ux%u %ux%u @%u %u\n",
           def.nPortIndex,
           def.eDir == OMX_DirInput ? "in" : "out",
           def.nBufferCountActual,
@@ -90,7 +92,7 @@ video_encode_test(char *outputfilename)
                                  ILCLIENT_ENABLE_INPUT_BUFFERS |
                                  ILCLIENT_ENABLE_OUTPUT_BUFFERS);
    if (r != 0) {
-      printf
+      Printf
          ("ilclient_create_component() for video_encode failed with %x!\n",
           r);
       exit(1);
@@ -106,7 +108,7 @@ video_encode_test(char *outputfilename)
    if (OMX_GetParameter
        (ILC_GET_HANDLE(video_encode), OMX_IndexParamPortDefinition,
         &def) != OMX_ErrorNone) {
-      printf("%s:%d: OMX_GetParameter() for video_encode port 200 failed!\n",
+      Printf("%s:%d: OMX_GetParameter() for video_encode port 200 failed!\n",
              __FUNCTION__, __LINE__);
       exit(1);
    }
@@ -126,7 +128,7 @@ video_encode_test(char *outputfilename)
    r = OMX_SetParameter(ILC_GET_HANDLE(video_encode),
                         OMX_IndexParamPortDefinition, &def);
    if (r != OMX_ErrorNone) {
-      printf
+      Printf
          ("%s:%d: OMX_SetParameter() for video_encode port 200 failed with %x!\n",
           __FUNCTION__, __LINE__, r);
       exit(1);
@@ -138,11 +140,11 @@ video_encode_test(char *outputfilename)
    format.nPortIndex = 201;
    format.eCompressionFormat = OMX_VIDEO_CodingAVC;
 
-   printf("OMX_SetParameter for video_encode:201...\n");
+   Printf("OMX_SetParameter for video_encode:201...\n");
    r = OMX_SetParameter(ILC_GET_HANDLE(video_encode),
                         OMX_IndexParamVideoPortFormat, &format);
    if (r != OMX_ErrorNone) {
-      printf
+      Printf
          ("%s:%d: OMX_SetParameter() for video_encode port 201 failed with %x!\n",
           __FUNCTION__, __LINE__, r);
       exit(1);
@@ -159,7 +161,7 @@ video_encode_test(char *outputfilename)
    r = OMX_SetParameter(ILC_GET_HANDLE(video_encode),
                        OMX_IndexParamVideoBitrate, &bitrateType);
    if (r != OMX_ErrorNone) {
-      printf
+      Printf
         ("%s:%d: OMX_SetParameter() for bitrate for video_encode port 201 failed with %x!\n",
          __FUNCTION__, __LINE__, r);
       exit(1);
@@ -175,47 +177,53 @@ video_encode_test(char *outputfilename)
    if (OMX_GetParameter
        (ILC_GET_HANDLE(video_encode), OMX_IndexParamVideoBitrate,
        &bitrateType) != OMX_ErrorNone) {
-      printf("%s:%d: OMX_GetParameter() for video_encode for bitrate port 201 failed!\n",
+      Printf("%s:%d: OMX_GetParameter() for video_encode for bitrate port 201 failed!\n",
             __FUNCTION__, __LINE__);
       exit(1);
    }
-   printf("Current Bitrate=%u\n",bitrateType.nTargetBitrate);
+   Printf("Current Bitrate=%u\n",bitrateType.nTargetBitrate);
 
 
 
-   printf("encode to idle...\n");
+   Printf("encode to idle...\n");
    if (ilclient_change_component_state(video_encode, OMX_StateIdle) == -1) {
-      printf
+      Printf
          ("%s:%d: ilclient_change_component_state(video_encode, OMX_StateIdle) failed",
           __FUNCTION__, __LINE__);
    }
 
-   printf("enabling port buffers for 200...\n");
+   Printf("enabling port buffers for 200...\n");
    if (ilclient_enable_port_buffers(video_encode, 200, NULL, NULL, NULL) != 0) {
-      printf("enabling port buffers for 200 failed!\n");
+      Printf("enabling port buffers for 200 failed!\n");
       exit(1);
    }
 
-   printf("enabling port buffers for 201...\n");
+   Printf("enabling port buffers for 201...\n");
    if (ilclient_enable_port_buffers(video_encode, 201, NULL, NULL, NULL) != 0) {
-      printf("enabling port buffers for 201 failed!\n");
+      Printf("enabling port buffers for 201 failed!\n");
       exit(1);
    }
 
-   printf("encode to executing...\n");
+   Printf("encode to executing...\n");
    ilclient_change_component_state(video_encode, OMX_StateExecuting);
 
+   if (strcmp(outputfilename, "-")==0)
+   {
+      outf = stdout;
+   } else {
    outf = fopen(outputfilename, "w");
+   }
+
    if (outf == NULL) {
-      printf("Failed to open '%s' for writing video\n", outputfilename);
+      Printf("Failed to open '%s' for writing video\n", outputfilename);
       exit(1);
    }
 
-   printf("looping for buffers...\n");
+   Printf("looping for buffers...\n");
    do {
       buf = ilclient_get_input_buffer(video_encode, 200, 1);
       if (buf == NULL) {
-         printf("Doh, no buffers for me!\n");
+         Printf("Doh, no buffers for me!\n");
       } else {
          /* fill it */
          buf->nFilledLen = def.format.video.nStride*def.format.video.nSliceHeight*3/2;
@@ -224,7 +232,7 @@ video_encode_test(char *outputfilename)
 
          if (OMX_EmptyThisBuffer(ILC_GET_HANDLE(video_encode), buf) !=
              OMX_ErrorNone) {
-            printf("Error emptying buffer!\n");
+            Printf("Error emptying buffer!\n");
          }
 
          out = ilclient_get_output_buffer(video_encode, 201, 1);
@@ -233,34 +241,35 @@ video_encode_test(char *outputfilename)
             if (out->nFlags & OMX_BUFFERFLAG_CODECCONFIG) {
                int i;
                for (i = 0; i < out->nFilledLen; i++)
-                  printf("%x ", out->pBuffer[i]);
-               printf("\n");
+                  Printf("%x ", out->pBuffer[i]);
+               Printf("\n");
             }
 
             r = fwrite(out->pBuffer, 1, out->nFilledLen, outf);
             if (r != out->nFilledLen) {
-               printf("fwrite: Error emptying buffer: %d!\n", r);
+               Printf("fwrite: Error emptying buffer: %d!\n", r);
             } else {
-               printf("Writing frame %d, len %u\n", framenumber, out->nFilledLen);
+               Printf("Writing frame %d, len %u\n", framenumber, out->nFilledLen);
             }
             out->nFilledLen = 0;
          } else {
-            printf("Not getting it :(\n");
+            Printf("Not getting it :(\n");
          }
 
          r = OMX_FillThisBuffer(ILC_GET_HANDLE(video_encode), out);
          if (r != OMX_ErrorNone) {
-            printf("Error sending buffer for filling: %x\n", r);
+            Printf("Error sending buffer for filling: %x\n", r);
          }
       }
    }
    while ( !feof(stdin) );
 
+   if (strcmp(outputfilename, "-")!=0)
    fclose(outf);
 
-   printf("Teardown.\n");
+   Printf("Teardown.\n");
 
-   printf("disabling port buffers for 200 and 201...\n");
+   Printf("disabling port buffers for 200 and 201...\n");
    ilclient_disable_port_buffers(video_encode, 200, NULL, NULL, NULL);
    ilclient_disable_port_buffers(video_encode, 201, NULL, NULL, NULL);
 
@@ -279,7 +288,7 @@ int
 main(int argc, char **argv)
 {
    if (argc < 4) {
-      printf("Usage: %s <filename> <width> <height>\n", argv[0]);
+      Printf("Usage: %s <filename> <width> <height>\n", argv[0]);
       exit(1);
    }
    width  = atoi(argv[2]);
