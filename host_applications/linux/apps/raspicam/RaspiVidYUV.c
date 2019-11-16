@@ -752,12 +752,21 @@ static void camera_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
             // file if saved.
             if(buffer->pts != MMAL_TIME_UNKNOWN)
             {
-               int64_t pts;
+               int64_t pts,dt;
+               static struct timespec time0 = { .tv_sec=0, .tv_nsec=0 };
+               struct timespec time1;
+               clock_gettime(CLOCK_REALTIME, &time1);
+               dt=1000000*(time1.tv_sec-(long long)time0.tv_sec) + (time1.tv_nsec-(long)time0.tv_nsec)/1000;
                if(pstate->frame==0)
                   pstate->starttime=buffer->pts;
                pData->lasttime=buffer->pts;
                pts = buffer->pts - pData->starttime;
-               fprintf(pData->pts_file_handle,"%lld.%03lld\n", pts/1000, pts%1000);
+               if (pts==0)
+               {
+                 time0.tv_sec  = time1.tv_sec;
+                 time0.tv_nsec = time1.tv_nsec;
+               }
+               fprintf(pData->pts_file_handle,"%lld.%03lld,%lld.%03lld\n", pts/1000, pts%1000, dt/1000, dt%1000);
                pData->frame++;
             }
          }
