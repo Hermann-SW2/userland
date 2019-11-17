@@ -1,7 +1,66 @@
+/*
+   $ gcc -Wall -Wextra -O6 -o sample_yuv_airplane.2 sample_yuv_airplane.2.c -lpigpio -lpthread
+   $
+*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <string.h>
 #include <assert.h>
+
+#include <pigpio.h>
+
+int D=1000, x=0, y=0, ST=9;
+
+unsigned m[][4]={
+  {14,15,17,18},
+  {27,22,23,24}
+};
+
+int b[8]={0b0001, 0b011, 0b0010, 0b0110, 0b0100, 0b1100, 0b1000, 0b1001};
+
+int M=sizeof(m)/sizeof(m[0]);
+int N=sizeof(m[0])/sizeof(m[0][0]);
+
+void gpiosWrite(unsigned *p, unsigned v)
+{
+  for(int i=0; i<N; ++i)
+    gpioWrite( p[i], (v&(1<<i)) ? 1 : 0 );
+}
+
+void hstep(int mn, unsigned v)
+{
+  gpiosWrite(m[mn], b[v & 0x7]);
+}
+
+void hstepr(int mn, unsigned v)
+{
+  gpiosWrite(m[mn], b[7-(v & 0x7)]);
+}
+
+void hstep2(int x, int y)
+{
+  hstepr(0,x); hstep(1,y); usleep(D);
+}
+
+void stepper_PT_init(void)
+{
+  assert(gpioInitialise()>=0);
+
+  for(int i=0; i<M; ++i)
+    for(int j=0; j<N; ++j)
+    {
+      gpioSetMode(m[i][j], PI_OUTPUT);
+      gpioWrite(m[i][j], 0);
+    }
+
+  hstep2(x,y);
+}
+
+void stepper_PT_exit(void)
+{
+  gpioTerminate();
+}
 
 struct { int y,u,v; }
   red  = { .y=82, .v=240, .u=90 },
@@ -14,6 +73,7 @@ int align_up(int x, int y)
 
 int min(int a, int b) { return a<b ? a : b; }
 int max(int a, int b) { return a>b ? a : b; }
+int sgn(int a) { return a<0 ? -1 : a>0 ? +1 : 0; }
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +89,9 @@ int main(int argc, char *argv[])
   Q      = atoi(argv[6]);
   T      = atoi(argv[7]);
 
+  stepper_PT_init();
+  hstep2(x=width/2, y=height/2);
+
   nLenY = nStride * nSliceHeight;  nLenU = nLenV = nLenY / 4;
   assert( (buf = malloc(nLenY)) );
 
@@ -37,6 +100,7 @@ int main(int argc, char *argv[])
   {
     unsigned char *L;
     int m=256, r=-1, c=-1, X, Y, N;
+
 
     for(int i=B; i>=0; --i)
     {
@@ -88,7 +152,6 @@ int main(int argc, char *argv[])
 
     fprintf(stderr, "%3d %3d %3d\n", r, c, m);
 
-    
     // mark 2x2 area white
     //
     c -= (c & 0x01);
@@ -103,10 +166,12 @@ int main(int argc, char *argv[])
       {
         if (L[x]>=T)
         {
+#if 0
           L[x+0] = 255;
           L[x+0+nStride] = 255;
           L[x+1+nStride] = 255;
           L[x+1] = 255;
+#endif
         } else {
           X += x;
           Y += y;
@@ -138,10 +203,20 @@ int main(int argc, char *argv[])
     L[c/2] = blue.v;
     fwrite(buf, nLenV, 1, stdout); fflush(stdout);
 
+    X = (c<width/2) ? max(c,width/2-ST) : min(c,width/2+ST);
+    Y = (r<height/2) ? max(r,height/2-ST) : min(r,height/2+ST);
+
+    fprintf(stderr,"%d,%d (%d,%d)\n",c,r,X,Y);
+
+usleep(10000);
+//    while (X!=0) { hstep2(x+=sgn(X), 0); X-=sgn(X); }
+
     fread(buf, nLenY, 1, stdin);
   }
 
   free(buf);
+
+  stepper_PT_exit();
 
   return 0;
 }
