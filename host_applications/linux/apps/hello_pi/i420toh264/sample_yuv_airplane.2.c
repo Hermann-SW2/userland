@@ -10,7 +10,7 @@
 
 #include <pigpio.h>
 
-int D=1000, x=0, y=0, ST=9;
+int D=1100, x=0, y=0, ST=9;
 
 unsigned m[][4]={
   {14,15,17,18},
@@ -90,7 +90,6 @@ int main(int argc, char *argv[])
   T      = atoi(argv[7]);
 
   stepper_PT_init();
-  hstep2(x=width/2, y=height/2);
 
   nLenY = nStride * nSliceHeight;  nLenU = nLenV = nLenY / 4;
   assert( (buf = malloc(nLenY)) );
@@ -150,7 +149,7 @@ int main(int argc, char *argv[])
       }
     }
 
-    fprintf(stderr, "%3d %3d %3d\n", r, c, m);
+//    fprintf(stderr, "%3d %3d %3d\n", r, c, m);
 
     // mark 2x2 area white
     //
@@ -203,13 +202,14 @@ int main(int argc, char *argv[])
     L[c/2] = blue.v;
     fwrite(buf, nLenV, 1, stdout); fflush(stdout);
 
+    hstep2(x=width/2, y=height/2);
+
     X = (c<width/2) ? max(c,width/2-ST) : min(c,width/2+ST);
     Y = (r<height/2) ? max(r,height/2-ST) : min(r,height/2+ST);
 
     fprintf(stderr,"%d,%d (%d,%d)\n",c,r,X,Y);
 
-usleep(10000);
-//    while (X!=0) { hstep2(x+=sgn(X), 0); X-=sgn(X); }
+    while (x!=X) { hstep2(x+=sgn(X-x), y); }
 
     fread(buf, nLenY, 1, stdin);
   }
