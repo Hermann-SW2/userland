@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
   int width, height, nStride, nSliceHeight, nLenY, nLenU, nLenV, x, y;
   unsigned char *buf, *alpha, *p, *q;
-  char line[1000];
+  char line[1000], temp[20];
   FILE *src;
   assert(argc==4 || !"Format: sample_yuv_alpha width height alpha.pgm");
 
@@ -29,13 +29,16 @@ int main(int argc, char *argv[])
 
   assert( (fgets(line, 1000, src)) ); 
   while (line[0]=='#') { assert( (fgets(line, 1000, src)) ); }
-  assert( strcmp(line,"1640 922\n")==0 );
+  sprintf(temp, "%d %d\n", nStride, nSliceHeight);
+fprintf(stderr, line);
+fprintf(stderr, temp);
+  assert( strcmp(line, temp)==0 );
 
   assert( (fgets(line, 1000, src)) ); 
   while (line[0]=='#') { assert( (fgets(line, 1000, src)) ); }
   assert( strcmp(line,"255\n")==0 );
 
-  assert( 1 == fread(alpha, 1640*922, 1, src) );
+  assert( 1 == fread(alpha, nLenY, 1, src) );
   fclose(src);
 
   fread(buf, nLenY, 1, stdin);
