@@ -10,7 +10,7 @@
 
 #include <pigpio.h>
 
-int D=1100, x=0, y=0, ST=9;
+int D=1100, ST=9, x, y, sx, sy;
 
 unsigned m[][4]={
   {14,15,17,18},
@@ -54,7 +54,7 @@ void stepper_PT_init(void)
       gpioWrite(m[i][j], 0);
     }
 
-  hstep2(x,y);
+  hstep2(sx,sy);
 }
 
 void stepper_PT_exit(void)
@@ -89,7 +89,9 @@ int main(int argc, char *argv[])
   Q      = atoi(argv[6]);
   T      = atoi(argv[7]);
 
+  sx=width/2; sy=height/2;
   stepper_PT_init();
+
 
   nLenY = nStride * nSliceHeight;  nLenU = nLenV = nLenY / 4;
   assert( (buf = malloc(nLenY)) );
@@ -202,14 +204,14 @@ int main(int argc, char *argv[])
     L[c/2] = blue.v;
     fwrite(buf, nLenV, 1, stdout); fflush(stdout);
 
-    hstep2(x=width/2, y=height/2);
-
     X = (c<width/2) ? max(c,width/2-ST) : min(c,width/2+ST);
     Y = (r<height/2) ? max(r,height/2-ST) : min(r,height/2+ST);
 
     fprintf(stderr,"%d,%d (%d,%d)\n",c,r,X,Y);
 
-    while (x!=X) { hstep2(x+=sgn(X-x), y); }
+    x=width/2; y=height/2;
+
+    while (x!=X) { hstep2(sx+=sgn(X-x), sy); x+=sgn(X-x); if (x!=X) x+=sgn(X-x); }
 
     fread(buf, nLenY, 1, stdin);
   }
