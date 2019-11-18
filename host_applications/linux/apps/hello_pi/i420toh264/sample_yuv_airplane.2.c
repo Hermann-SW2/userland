@@ -211,7 +211,12 @@ int main(int argc, char *argv[])
 
     x=width/2; y=height/2;
 
-    while (x!=X) { hstep2(sx+=sgn(X-x), sy); x+=sgn(X-x); if (x!=X) x+=sgn(X-x); }
+    while (x!=X || y!=Y)
+    {
+      hstep2(sx+=sgn(X-x), sy+=sgn(Y-y));
+      if (x!=X) { x+=sgn(X-x); }  if (x!=X) { x+=sgn(X-x); }
+      if (y!=Y) { y+=sgn(Y-y); }  if (y!=Y) { y+=sgn(Y-y); }
+    }
 
     fread(buf, nLenY, 1, stdin);
   }
