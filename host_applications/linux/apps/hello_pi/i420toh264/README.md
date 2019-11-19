@@ -105,6 +105,17 @@ $
 Here you can see part of the generated video, overlayed with flow of operation:  
 <img src="airplane.200.anim.gif"/>
 
+This is work in progress, but wanted to link here while not complete.  
+
+This is stepper PT camera system used:  
+"4 drops of superglue result in high precision PT camera system"  
+[forum thread](https://forum.arduino.cc/index.php?topic=647703.0)  
+![pi.uln2003.anim.gif](pi.uln2003.anim.gif)  
+
+This is automatic centering (at black ball, playing role of airplane) of video captured. 60fps framrate does not give enough time for stepper motor steps for higher speed, but should allow to follow airplane already (animation 4 times slower than real):  
+[forum posting](https://www.raspberrypi.org/forums/viewtopic.php?f=43&t=252176&p=1568093#p1568093)  
+![steppers.P.simple.anim.gif](steppers.P.simple.anim.gif)
+ 
 #### Alpha blending
 
 [sample_yuv_alpha.c](sample_yuv_alpha.c) receives YUV video frames from raspividyuv, and sends them modified to i420toh264 tool ([encode.c](encode.c)), which creates tst.h264. It keeps U and V values for all pixels, which is "keep color" of input frame. The Y values are modified according the same format (1640×922) alpha transparency .pgm file. This is first sample program that has to be compiled optimized (-O6) in order to work for 1640x922@25fps.
