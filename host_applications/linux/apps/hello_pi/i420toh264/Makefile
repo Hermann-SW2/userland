@@ -11,6 +11,7 @@ all:
 	gcc -Wall -pedantic -Wextra sample_yuv_airplane.c -O6 -o sample_yuv_airplane
 	gcc -Wall -Wextra sample_yuv_airplane.2.c -O6 -o sample_yuv_airplane.2 -lpigpio -lpthread
 	gcc -Wall -Wextra sample_yuv_pts.c -O6 -o sample_yuv_pts -lpigpio -lpthread
+	g++ -Wall -Wextra PID_test.cpp Arduino.cpp Arduino-PID-Library/PID_v1.cpp -o PID_test
 
 CLEAN:
 	rm -f sample_yuv2grey sample_yuv_brightness sample_yuv_alpha sample_yuv_airplane sample_yuv_airplane.2 sample_yuv_pts
