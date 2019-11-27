@@ -6,6 +6,7 @@
   * [Minimal use in pipeline](#minimal-use-in-pipeline)
   * [Simple non-modifying pipeline](#simple-non-modifying-pipeline)
   * [Simple modifying pipeline](#simple-modifying-pipeline)
+  * [Medium modifying pipeline](#medium-modifying-pipeline)
   * [Advanced modifying pipeline](#advanced-modifying-pipeline)  
     * [Locating airplane](#locating-airplane)
     * [Alpha blending](#alpha-blending)  
@@ -89,6 +90,47 @@ Of course a modifying "plugin" can control eg. servos as well.
     user	0m0.311s
     sys	0m13.464s
     $ 
+
+### Medium modifying pipeline
+
+[sample_yuv_dbl_roi.c](sample_yuv_dbl_roi.c) receives YUV video frames from raspividyuv, and sends them modified to i420toh264 tool ([encode.c](encode.c)), which creates tst.h264. Similar to raspivid[yuv] "-roi" option it extracts two regions of interest from input frame, and creates typically different format (2*w,d) frame as output for option "x1,y1,x2,y2,w,d". This can be useful especially for Stereo frames consisting of left and right camera frame in a single frame (like from [Arducam Stereo hat with two v1 cameras](https://www.uctronics.com/index.php/arducam-synchronized-stereo-camera-bundle-kit-5mp-for-raspberry-pi-2173.html) or two v2 cameras):
+
+```
+$ time (
+> raspividyuv -md 7 -w 640 -h 480 -fps 90 -o - |
+> ./sample_yuv_dbl_roi 640 480 40,160,371,51,240,180 |
+> ./i420toh264 tst.h264 480 180
+> )
+Port 200: in 1/1 15360 16 disabled,not pop.,not cont. 160x64 160x64 @1966080 20
+Port 200: in 1/1 15360 16 disabled,not pop.,not cont. 480x180 480x192 @1966080 20
+OMX_SetParameter for video_encode:201...
+Current Bitrate=1000000
+encode to idle...
+enabling port buffers for 200...
+enabling port buffers for 201...
+encode to executing...
+looping for buffers...
+Writing frame 1, len 0
+0 0 0 1 27 64 0 14 ac 2b 40 f0 cf cf 0 f1 22 6a 0 0 0 1 28 ee 2 5c b0 
+Writing frame 2, len 27
+Writing frame 3, len 2658
+...
+Writing frame 448, len 4030
+Writing frame 449, len 4136
+Teardown.
+disabling port buffers for 200 and 201...
+
+real	0m5.266s
+user	0m0.380s
+sys	0m3.242s
+$ 
+```
+
+This is 480x180 frame from generated video tst.h264:  
+![480x180.90fps_dbl_roi.png](480x180.90fps_dbl_roi.png)
+
+For comparison, this is full 640x480 frame:  
+![640x480.90fps_full.png](640x480.90fps_full.png)
 
 ### Advanced modifying pipeline
 
