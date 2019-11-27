@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
   int width, height, nStride, nSliceHeight, nLenY, nLenU, nLenV, x, y;
   unsigned char *buf, *alpha, *p, *q;
-  char line[1000], temp[20];
+  char line[1000], temp[30];
   FILE *src;
   assert(argc==4 || !"Format: sample_yuv_alpha width height alpha.pgm");
 
