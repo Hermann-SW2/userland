@@ -8,13 +8,9 @@ SET(PROJECT_VER_PATCH 0)
 SET(PROJECT_VER "${PROJECT_VER_MAJOR}.${PROJECT_VER_MINOR}.${PROJECT_VER_PATCH}")
 SET(PROJECT_APIVER "${PROJECT_VER}")
 
-if(ARM64)
-   set(BUILD_MMAL FALSE)
-   set(BUILD_MMAL_APPS FALSE)
-else()
-   set(BUILD_MMAL TRUE)
-   set(BUILD_MMAL_APPS TRUE)
-endif()
+set(BUILD_MMAL TRUE)
+set(BUILD_MMAL_APPS TRUE)
+
 set(vmcs_root ${PROJECT_SOURCE_DIR})
 get_filename_component(VIDEOCORE_ROOT . ABSOLUTE)
 
@@ -78,9 +74,11 @@ if(BUILD_MMAL)
 endif()
 
 # VidTex supports Android and Linux
-if(BUILD_MMAL_APPS)
-add_subdirectory(host_applications/android/apps/vidtex)
-endif(BUILD_MMAL_APPS)
+if(NOT ARM64)
+   if(BUILD_MMAL_APPS)
+   add_subdirectory(host_applications/android/apps/vidtex)
+   endif(BUILD_MMAL_APPS)
+endif()
 
 if(NOT ARM64)
    add_subdirectory(middleware/openmaxil)
@@ -122,7 +120,7 @@ include_directories("${PROJECT_BINARY_DIR}")
 include(FindPkgConfig QUIET)
 if(PKG_CONFIG_FOUND)
 	# Produce a pkg-config file
-	foreach(PCFILE bcm_host.pc egl.pc glesv2.pc vg.pc brcmegl.pc brcmglesv2.pc  brcmvg.pc vcsm.pc mmal.pc )
+	foreach(PCFILE bcm_host.pc brcmegl.pc brcmglesv2.pc brcmvg.pc vcsm.pc mmal.pc)
 		configure_file("pkgconfig/${PCFILE}.in" "${PCFILE}" @ONLY)
 		install(FILES       "${CMAKE_CURRENT_BINARY_DIR}/${PCFILE}"
 			DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
