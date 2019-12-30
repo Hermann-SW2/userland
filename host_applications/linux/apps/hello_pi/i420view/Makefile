@@ -1,5 +1,5 @@
 OBJS=dispmanx.o
-BIN=hello_dispmanx.bin
+BIN=i420view.bin
 
 include ../Makefile.include
 
