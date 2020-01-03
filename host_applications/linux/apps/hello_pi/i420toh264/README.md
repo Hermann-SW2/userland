@@ -24,7 +24,7 @@ All you need to know about [raspividyuv](https://www.raspberrypi.org/documentati
 * Y pixel values are followed by U and then V pixel values
 * rows are stored from top to bottom  
 * pixels in a row are stored from left to right  
-* align_up(a,b) is minimal multiple of b which is ≥a  
+* align_up(a,b) is minimal multiple of 2ᵇ which is ≥a  
 ![YUV frame layout](YUV_frame.png)
 
 ## Building on Pi
