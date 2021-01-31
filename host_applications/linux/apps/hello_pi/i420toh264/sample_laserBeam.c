@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 {
   int width, height, nStride, nSliceHeight, nLenY, nLenU, nLenV, xintc, yintc;
   unsigned char *buf, mx, fnd;
-  int x, y, s;
+  int x, y, s, adjust;
   assert(argc==5 ||
          !"Format: sample_laserBeam width height x-intercept y-intercept");
 
@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
   height = atoi(argv[2]); nSliceHeight = align_up(height, 4);
   xintc  = atoi(argv[3]);
   yintc  = atoi(argv[4]);
+  adjust = !strstr(argv[0], "sample_laserBeam");
 
   nLenY = nStride * nSliceHeight;  nLenU = nLenV = nLenY / 4;
   assert( (buf = malloc(nLenY+nLenU+nLenV)) );
@@ -33,6 +34,8 @@ int main(int argc, char *argv[])
   fread(buf, nLenY+nLenU+nLenV, 1, stdin);
   while (!feof(stdin))
   {
+   if (!adjust)
+   {
     for(mx=0, y=0, x=xintc, s=0; y<=yintc; ++y)
     {
       s += xintc;  if (s > yintc)  { s -= yintc; --x; }
@@ -54,7 +57,19 @@ int main(int argc, char *argv[])
       else if (fnd)
         break; 
     }
+   }
+   else
+   {
+    for(y=0, x=xintc, s=0; y<=yintc; ++y)
+    {
+      s += xintc;  if (s > yintc)  { s -= yintc; --x; }
+
+      buf[x+y*nStride]                             = y_blue;
+      buf[(x/2)+(y/2)*(nStride/2) + nLenY]         = u_blue;
+      buf[(x/2)+(y/2)*(nStride/2) + nLenY + nLenU] = v_blue;
+    }
     // fprintf(stderr, "x=%d y=%d s=%d\n", x, y, s);
+   }
 
     fwrite(buf, nLenY+nLenU+nLenV, 1, stdout); fflush(stdout);
 
